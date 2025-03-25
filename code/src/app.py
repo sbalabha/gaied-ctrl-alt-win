@@ -5,6 +5,10 @@ from loan_banking_processor import LoanBankingEmailProcessor
 app = Flask(__name__)
 processor = LoanBankingEmailProcessor()
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "ok"})
+
 @app.route('/process_emails', methods=['POST'])
 def process_emails():
     emails = request.json.get('emails', [])  # Expect list of email dicts
