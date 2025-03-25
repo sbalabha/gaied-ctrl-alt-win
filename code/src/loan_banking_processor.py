@@ -35,16 +35,17 @@ class LoanBankingEmailProcessor:
 
 
 
+
     def _load_zero_shot(self):
         if not self.zero_shot_classifier:
-            self.zero_shot_classifier = pipeline("zero-shot-classification", model="typeform/distilbert-base-uncased-mnli")
-
+            # Use an even lighter model if needed
+            self.zero_shot_classifier = pipeline("zero-shot-classification", model="typeform/distilbert-base-uncased-mnli", device=-1)  # CPU only
 
     def _load_distilbert(self):
-        # Load DistilBERT only when needed for fine-tuning
         if not self.tokenizer or not self.model:
             self.tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-uncased')
-            self.model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased', num_labels=20)
+            # Delay model load until fine-tuning
+            self.model = None  # Load only in _fine_tune_model
 
     def categorize_email(self, email: Dict) -> Tuple[str, str, float]:
         text = f"{email['subject']} {email['content']}"
@@ -97,6 +98,8 @@ class LoanBankingEmailProcessor:
             self._fine_tune_model()
 
     def _fine_tune_model(self):
+        if not self.model:
+            self.model = DistilBertForSequenceClassification.from_pretrained('distilbert-base-uncased', num_labels=20)
         encodings = self.tokenizer(self.feedback_data['texts'], truncation=True, padding=True, max_length=512, return_tensors='pt')
         dataset = torch.utils.data.TensorDataset(
             encodings['input_ids'],
