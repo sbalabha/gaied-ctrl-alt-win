@@ -2,6 +2,7 @@ import email
 import os
 from transformers import pipeline, DistilBertTokenizer, DistilBertForSequenceClassification
 from transformers import Trainer, TrainingArguments
+
 import torch
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -32,10 +33,12 @@ class LoanBankingEmailProcessor:
         self.email_history = []
         self.feedback_data = {'texts': [], 'labels': []}
 
+
+
     def _load_zero_shot(self):
-        # Load a lighter model for zero-shot classification
         if not self.zero_shot_classifier:
-            self.zero_shot_classifier = pipeline("zero-shot-classification", model="distilbert-base-nli-mean-tokens")
+            self.zero_shot_classifier = pipeline("zero-shot-classification", model="typeform/distilbert-base-uncased-mnli")
+
 
     def _load_distilbert(self):
         # Load DistilBERT only when needed for fine-tuning
